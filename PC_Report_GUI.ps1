@@ -7,6 +7,9 @@ $form.Text = "PC Health Reporter"
 $form.Size = New-Object System.Drawing.Size(700, 640)
 $form.StartPosition = "CenterScreen"
 
+# Global variable for disk data (used in CSV export)
+$global:diskData = @()
+
 # Output Box
 $outputBox = New-Object System.Windows.Forms.RichTextBox
 $outputBox.Location = New-Object System.Drawing.Point(20, 140)
@@ -77,6 +80,7 @@ $runButton.Add_Click({
     $os = Get-CimInstance Win32_OperatingSystem
     $cpu = Get-CimInstance Win32_Processor
     $disk = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3"
+    $global:diskData = $disk
     $ramTotal = [math]::Round($os.TotalVisibleMemorySize / 1MB, 2)
     $ramUsed = [math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) / 1MB, 2)
     $cpuLoad = (Get-Counter '\Processor(_Total)\% Processor Time').CounterSamples[0].CookedValue
@@ -101,6 +105,7 @@ $runButton.Add_Click({
         } else {
             $outputBox.AppendText("Antivirus: Not detected`r`n")
         }
+
         $outputBox.AppendText("`r`n")
     }
 
@@ -139,13 +144,20 @@ $saveButton.Add_Click({
     [System.Windows.Forms.MessageBox]::Show("Report saved to desktop as PC_Health_Report.txt")
 })
 
-# Export CSV Logic (Disk section only for now — modular add-ons welcome)
+# Export CSV Logic
 $csvButton.Add_Click({
+    if ($global:diskData.Count -eq 0) {
+        [System.Windows.Forms.MessageBox]::Show("Please run the health scan first.")
+        return
+    }
+
     $csvPath = "$env:USERPROFILE\Desktop\Disk_Report.csv"
-    $disk | Select-Object DeviceID, @{Name="UsedGB";Expression={[math]::Round(($_.Size - $_.FreeSpace)/1GB,2)}},
-                         @{Name="TotalGB";Expression={[math]::Round($_.Size / 1GB,2)}} |
+    $global:diskData | Select-Object DeviceID, 
+        @{Name="UsedGB";Expression={[math]::Round(($_.Size - $_.FreeSpace)/1GB,2)}},
+        @{Name="TotalGB";Expression={[math]::Round($_.Size / 1GB,2)}} |
         Export-Csv -Path $csvPath -NoTypeInformation
-    [System.Windows.Forms.MessageBox]::Show("Disk report exported to CSV on Desktop.")
+
+    [System.Windows.Forms.MessageBox]::Show("Disk report exported to Desktop as Disk_Report.csv.")
 })
 
 # Launch GUI
