@@ -18,11 +18,13 @@ This PowerShell script collects essential PC health data including OS, CPU, RAM,
 
 Below is a live preview of `PC_Report_GUI.ps1` running on Windows 10:
 
-![PC Health Reporter GUI Output](./PCH.PNG)
+![PC Health Reporter GUI](./PCH.png)
 
-- Timestamped scan data  
-- Clickable buttons for “Run Health Scan,” “Save Report,” and “Exit”  
-- Scrollable live output box displaying OS, CPU, RAM, Disk usage, Antivirus, and Top Installed Programs  
+**Visible Features:**
+- System Info, Disk Usage, Installed Apps
+- Health Scan button with live results
+- Timestamped report formatting for tickets
+ 
 
 ## 🖼️ Sample Output
 ```
